@@ -46,12 +46,7 @@ describe('LocalSavePurchases', () => {
         const { cacheStore, sut } = makeSut()
         await sut.save()
         expect(cacheStore.deleteCallsCount).toBe(1)
-    })
-
-    //Precisa da chave correta para deletar o cache
-    test('Should call delete with correct key', async () => {
-        const { cacheStore, sut } = makeSut()
-        await sut.save()
+        //Precisa da chave correta para deletar o cache
         expect(cacheStore.key).toBe('purchases')
     })
 })
