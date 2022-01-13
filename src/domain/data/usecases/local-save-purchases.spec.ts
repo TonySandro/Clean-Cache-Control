@@ -1,19 +1,36 @@
 class LocalSavePurchases {
-    constructor(private readonly cacheStore: CacheStore) {
+    constructor(private readonly cacheStore: CacheStore) { }
 
+    async save(): Promise<void> {
+        this.cacheStore.delete()
     }
 }
 
 interface CacheStore {
-}
-class CacheStoreSpy implements CacheStore {
-    deleteCallsCount = 0
+    delete: () => void
 }
 
+class CacheStoreSpy implements CacheStore {
+    deleteCallsCount = 0
+
+    delete (): void {
+        this.deleteCallsCount++
+    }
+}
+
+//Garante que nao tenha error por modificacoes no construtor
 describe('LocalSavePurchases', () => {
-    test('Should not dele cache on sut.init', () => {
+    test('Should not delete cache on sut.init', () => {
         const cacheStore = new CacheStoreSpy()
         new LocalSavePurchases(cacheStore)
         expect(cacheStore.deleteCallsCount).toBe(0)
+    })
+
+    //Garantir que antes de salvar o cache, ele limpe o cache atual
+    test('Should  delete cache on sut.save', async () => {
+        const cacheStore = new CacheStoreSpy()
+        const sut = new LocalSavePurchases(cacheStore)
+        await sut.save()
+        expect(cacheStore.deleteCallsCount).toBe(1)
     })
 })
