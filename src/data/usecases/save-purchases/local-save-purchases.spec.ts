@@ -19,17 +19,16 @@ const makeSut = (): SutTypes => {
 }
 //Garante que nao tenha error por modificacoes no construtor
 describe('LocalSavePurchases', () => {
-    test('Should not delete cache on sut.init', () => {
+    test('Should not delete or insert cache on sut.init', () => {
         const { cacheStore } = makeSut()
-        new LocalSavePurchases(cacheStore)
-        expect(cacheStore.deleteCallsCount).toBe(0)
+        expect(cacheStore.messages).toEqual([])
     })
 
     //Garantir que antes de salvar o cache, ele limpe o cache atual
     test('Should delete old cache on sut.save', async () => {
         const { cacheStore, sut } = makeSut()
         await sut.save(mockPurchase())
-        expect(cacheStore.deleteCallsCount).toBe(1)
+        expect(cacheStore.messages).toEqual([CacheStoreSpy.Message.delete, CacheStoreSpy.Message.insert])
         //Precisa da chave correta para deletar o cache
         expect(cacheStore.deleteKey).toBe('purchases')
     })
@@ -39,7 +38,8 @@ describe('LocalSavePurchases', () => {
         const { cacheStore, sut } = makeSut()
         cacheStore.simulateDeleteError()
         const promise = sut.save(mockPurchase())
-        expect(cacheStore.insertCallsCount).toBe(0)
+        expect(cacheStore.messages).toEqual([CacheStoreSpy.Message.delete])
+
         expect(promise).rejects.toThrow()
     })
 
@@ -48,8 +48,7 @@ describe('LocalSavePurchases', () => {
         const { cacheStore, sut } = makeSut()
         const purchases = mockPurchase()
         await sut.save(purchases)
-        expect(cacheStore.deleteCallsCount).toBe(1)
-        expect(cacheStore.insertCallsCount).toBe(1)
+        expect(cacheStore.messages).toEqual([CacheStoreSpy.Message.delete, CacheStoreSpy.Message.insert])
         expect(cacheStore.insertValues).toEqual(purchases)
     })
 
@@ -58,6 +57,7 @@ describe('LocalSavePurchases', () => {
         const { cacheStore, sut } = makeSut()
         cacheStore.simulateInsertError()
         const promise = sut.save(mockPurchase())
+        expect(cacheStore.messages).toEqual([CacheStoreSpy.Message.delete, CacheStoreSpy.Message.insert])
         expect(promise).rejects.toThrow()
     })
 
