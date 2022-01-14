@@ -18,6 +18,10 @@ export class CacheStoreSpy implements CacheStore {
         this.insertValues = value
 
     }
+    replace(key: string, value: any): void {
+        this.delete(key)
+        this.insert(key, value)
+    }
 
     simulateDeleteError(): void {
         jest.spyOn(CacheStoreSpy.prototype, 'delete').mockImplementationOnce(() => {
